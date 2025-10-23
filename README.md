@@ -11,11 +11,7 @@
 🧠 Dynamic Spell System: Type any spell idea — from “Expelliarmus” to “a tidal wave of lightning”.
 The Gemini API interprets your prompt and generates:
 
-A spell name
-
-A description
-
-A damage value (0–70)
+   ###                                  Input:   A spell name
 
 💥 Animated Duels: Watch unique spell effects fly across the screen as characters react to hits.
 
@@ -26,20 +22,3 @@ A damage value (0–70)
 🕹️ Simple Controls: Just type your spell and click “Fight!” (or press Enter).
 How to Play
 
-Open wizard-duel.html in your web browser.
-
-When it's your turn, type a spell name or a description of an attack into the input box.
-
-Press the "Fight!" button or hit the Enter key.
-
-Watch as the game logs your spell's name, description, and the damage it deals (as determined by the Gemini API).
-
-Your opponent will then take their turn.
-
-Defeat your opponent by reducing their health to 0.
-
-A new, more challenging opponent will appear.
-
-Defeat all opponents to become the champion!
-
-If you are defeated, or if you want to start over, press the "Restart" button.
