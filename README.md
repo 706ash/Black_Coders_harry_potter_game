@@ -2,22 +2,28 @@
 
 # 1 v 1 Harry Potter Game
 
-Features
+# ✨ Features
 
-Pixel Art Style: Classic 8-bit graphics for a nostalgic feel.
+🎨 Pixel Art Style: Enjoy nostalgic 8-bit visuals inspired by classic arcade RPGs.
 
-Turn-Based Combat: You and your opponent take turns casting spells.
+⚔️ Turn-Based Combat: Strategically trade spells with your opponent, one move at a time.
 
-Dynamic Spell System: Type in any spell you can think of (e.g., "Expelliarmus," "a giant blast of fire," "tickle charm"). The Gemini API interprets your prompt and assigns a spell name, description, and damage value between 0 and 70.
+🧠 Dynamic Spell System: Type any spell idea — from “Expelliarmus” to “a tidal wave of lightning”.
+The Gemini API interprets your prompt and generates:
 
-Animated Duels: Watch unique spell projectiles fly across the screen and see sprites shake when hit.
+A spell name
 
-Progressive Opponents: Battle your way through a lineup of increasingly difficult wizards, from Draco Malfoy to Lord Voldemort.
+A description
 
-Health & Score: Keep track of your health, your opponent's health, and your total score.
+A damage value (0–70)
 
-Simple Controls: All you need is your keyboard to type and a mouse to click "Fight!" or "Restart."
+💥 Animated Duels: Watch unique spell effects fly across the screen as characters react to hits.
 
+🧙 Progressive Opponents: Battle increasingly powerful rivals — from Draco Malfoy to Lord Voldemort.
+
+❤️ Health & Score Tracking: Monitor both health bars and your total duel score.
+
+🕹️ Simple Controls: Just type your spell and click “Fight!” (or press Enter).
 How to Play
 
 Open wizard-duel.html in your web browser.
