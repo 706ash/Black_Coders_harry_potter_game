@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8-Bit Wizard Duel</title>
+    <!-- Tailwind CSS for layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Pixel font -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Custom 8-bit theme */
+        :root {
+            --player-robe: #770000; /* Gryffindor Red */
+            --enemy-robe: #005a00; /* Slytherin Green */
+        }
+        
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #2c133a; /* Dark purple */
+            color: #f0f0f0;
+            /* Pixelated rendering */
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+
+        /* 8-bit container/button style */
+        .pixel-border {
+            border: 4px solid #f0f0f0;
+            box-shadow: inset -4px -4px 0px 0px #5a3a6b, inset 4px 4px 0px 0px #ffffff;
+            background-color: #4a2a5a;
+        }
+
+        .pixel-button {
+            border: 4px solid #f0f0f0;
+            background-color: #8a6a9b;
+            box-shadow: inset -4px -4px 0px 0px #5a3a6b, inset 4px 4px 0px 0px #ffffff;
+            color: #ffffff;
+            text-shadow: 2px 2px #333;
+            transition: all 0.1s;
+        }
+
+        .pixel-button:active {
+            box-shadow: inset 4px 4px 0px 0px #5a3a6b;
+            transform: translate(2px, 2px);
+        }
+
+        .pixel-button:disabled {
+            background-color: #555;
+            color: #999;
+            box-shadow: inset -2px -2px 0px 0px #333;
+            text-shadow: none;
+            cursor: not-allowed;
+        }
+
+        /* 8-bit input */
+        .pixel-input {
+            font-family: 'Press Start 2P', cursive;
+            background: #f0f0f0;
+            color: #333;
+            border: 4px solid #f0f0f0;
+            box-shadow: inset 4px 4px 0px 0px #5a3a6b;
+            padding: 8px;
+        }
+        .pixel-input::placeholder {
+            color: #777;
+        }
+
+        /* Health bars */
+        .health-bar-container {
+            height: 24px;
+            border: 2px solid #f0f0f0;
+            background: #333;
+            width: 100%;
+            padding: 2px;
+        }
+
+        .health-bar-fill {
+            height: 100%;
+            background-color: #00ff00; /* Green */
+            transition: width 0.5s ease;
+        }
+
+        /* 8-bit Sprites (Simple Blocky Style) */
+        .wizard-sprite {
+            width: 40px;
+            height: 70px;
+            position: relative;
+            margin: 0 auto;
+            transform: scale(1.5); /* Make sprites a bit bigger */
+        }
+
+        .wizard-sprite .head {
+            width: 20px; height: 20px;
+            background: #f3d4b1; /* Skin */
+            position: absolute; top: 0; left: 10px;
+            border: 2px solid #333;
+        }
+
+        .wizard-sprite .body {
+            width: 30px; height: 35px;
+            background: var(--robe-color, #333);
+            position: absolute; top: 20px; left: 5px;
+            border: 2px solid #333;
+        }
+
+        .wizard-sprite .legs {
+            width: 10px; height: 15px;
+            background: #333;
+            position: absolute; top: 55px; left: 10px;
+            border: 2px solid #333;
+            box-shadow: 12px 0 0 0 #333; /* Other leg */
+        }
+
+        /* Player-specific style */
+        #player-sprite .head {
+            /* Glasses */
+            box-shadow: -4px 8px 0 0 #333, 4px 8px 0 0 #333, 0px 8px 0 0 #333;
+        }
+        #player-sprite .body {
+            background: var(--player-robe);
+        }
+
+        /* Enemy-specific style */
+        #enemy-sprite .head {
+            box-shadow: none; /* No glasses */
+        }
+        #enemy-sprite .body {
+            background: var(--enemy-robe);
+        }
+
+        /* Spell Animation */
+        #spell-animation-area {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .spell-projectile {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            opacity: 0;
+            box-shadow: 0 0 10px 5px var(--spell-color, #fff);
+            background-color: var(--spell-color, #fff);
+            /* Add a little 8-bit sparkle */
+            border-top: 2px solid white;
+            border-left: 2px solid white;
+            border-bottom: 2px solid #ccc;
+            border-right: 2px solid #ccc;
+        }
+
+        .fly-to-enemy {
+            /* Starts from player's wand position */
+            animation: fly-right 0.5s linear forwards;
+        }
+
+        .fly-to-player {
+            /* Starts from enemy's wand position */
+            animation: fly-left 0.5s linear forwards;
+        }
+
+        @keyframes fly-right {
+            0% { left: 25%; top: 40%; opacity: 1; transform: scale(1); }
+            100% { left: 75%; top: 40%; opacity: 1; transform: scale(1.5); }
+        }
+
+        @keyframes fly-left {
+            0% { right: 25%; top: 40%; opacity: 1; transform: scale(1); }
+            100% { right: 75%; top: 40%; opacity: 1; transform: scale(1.5); }
+        }
+
+        /* Hit Animation */
+        .shake {
+            animation: shake-anim 0.3s;
+        }
+
+        @keyframes shake-anim {
+            0%, 100% { transform: translateX(0) scale(1.5); }
+            25% { transform: translateX(-8px) scale(1.5); }
+            75% { transform: translateX(8px) scale(1.5); }
+        }
+        
+        /* Message Log */
+        #message-log {
+            height: 100px;
+            overflow-y: auto;
+            border-bottom: 4px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        #message-log p {
+            margin-bottom: 8px;
+        }
+
+        /* Loading Spinner */
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #8a6a9b;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div id="game-container" class="max-w-4xl mx-auto pixel-border p-4 md:p-8 relative">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6 border-b-4 border-gray-100 pb-4">
+            <h1 class="text-xl md:text-3xl">8-Bit Wizard Duel</h1>
+            <div id="score" class="text-lg md:text-2xl">Score: 0</div>
+        </div>
+
+        <!-- Battle Arena -->
+        <div id="battle-arena" class="flex justify-between items-start mb-6 h-48 md:h-64">
+            <!-- Player Side -->
+            <div class="w-1/3 text-center">
+                <h2 id="player-name" class="text-lg mb-2">Harry</h2>
+                <div id="player-sprite" class="wizard-sprite mb-4">
+                    <div class="head"></div>
+                    <div class="body"></div>
+                    <div class="legs"></div>
+                </div>
+                <div class="health-bar-container">
+                    <div id="player-health-bar" class="health-bar-fill" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <!-- Empty space for animations -->
+            <div class="w-1/3 h-full relative">
+                <div id="spell-animation-area"></div>
+            </div>
+
+            <!-- Enemy Side -->
+            <div class="w-1/3 text-center">
+                <h2 id="enemy-name" class="text-lg mb-2">Opponent</h2>
+                <div id="enemy-sprite" class="wizard-sprite mb-4">
+                    <div class="head"></div>
+                    <div class="body"></div>
+                    <div class="legs"></div>
+                </div>
+                <div class="health-bar-container">
+                    <div id="enemy-health-bar" class="health-bar-fill" style="width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- UI Panel -->
+        <div id="ui-panel" class="pixel-border p-4">
+            <!-- Message Log -->
+            <div id="message-log" class="w-full bg-black bg-opacity-20 p-2 mb-4 h-28 overflow-y-scroll text-sm">
+                <p>A new duel begins! What's your first spell?</p>
+            </div>
+
+            <!-- Input & Buttons -->
+            <div class="flex flex-col md:flex-row gap-4">
+                <input type="text" id="spell-prompt" placeholder="Type your spell (e.g., 'Expelliarmus')" class="pixel-input flex-grow">
+                <button id="fight-button" class="pixel-button p-3 text-lg">Fight!</button>
+                <button id="run-button" class="pixel-button p-3 text-lg bg-red-700">Restart</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="modal hidden">
+        <div class="loader"></div>
+    </div>
+    
+    <!-- Game Over Modal -->
+    <div id="game-over-modal" class="modal hidden">
+        <div class="pixel-border p-8 text-center">
+            <h2 id="game-over-title" class="text-3xl mb-4">You were defeated!</h2>
+            <p id="game-over-score" class="text-xl mb-6">Final Score: 0</p>
+            <button id="play-again-button" class="pixel-button p-3 text-lg">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const playerHealthBar = document.getElementById('player-health-bar');
+        const enemyHealthBar = document.getElementById('enemy-health-bar');
+        const playerName = document.getElementById('player-name');
+        const enemyName = document.getElementById('enemy-name');
+        const playerScore = document.getElementById('score');
+        const messageLog = document.getElementById('message-log');
+        const spellPrompt = document.getElementById('spell-prompt');
+        const fightButton = document.getElementById('fight-button');
+        const runButton = document.getElementById('run-button');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const gameOverModal = document.getElementById('game-over-modal');
+        const gameOverTitle = document.getElementById('game-over-title');
+        const gameOverScore = document.getElementById('game-over-score');
+        const playAgainButton = document.getElementById('play-again-button');
+        const playerSprite = document.getElementById('player-sprite');
+        const enemySprite = document.getElementById('enemy-sprite');
+        const animationArea = document.getElementById('spell-animation-area');
+        const enemySpriteElement = document.getElementById('enemy-sprite');
+
+        // --- Game State ---
+        let playerHealth = 100;
+        let enemyHealth = 100;
+        let score = 0;
+        let currentOpponentIndex = 0;
+        let isPlayerTurn = true;
+        let isAnimating = false;
+
+        const opponents = [
+            { name: "Draco Malfoy", robeColor: "#005a00" },
+            { name: "Crabbe", robeColor: "#005a00" },
+            { name: "Bellatrix", robeColor: "#222222" },
+            { name: "Voldemort", robeColor: "#111111" },
+        ];
+        
+        const enemySpells = [
+            { name: "Stupefy", damage: 15 },
+            { name: "Sectumsempra", damage: 40 },
+            { name: "Crucio", damage: 60 },
+            { name: "Avada Kedavra", damage: 70 } // A high-roll
+        ];
+
+        // --- Game Logic ---
+
+        function initGame() {
+            playerHealth = 100;
+            score = 0;
+            currentOpponentIndex = 0;
+            isPlayerTurn = true;
+            isAnimating = false;
+
+            updateScoreUI();
+            updateHealthUI();
+            loadOpponent(currentOpponentIndex);
+            
+            logMessage("A new duel begins! What's your first spell?");
+            gameOverModal.classList.add('hidden');
+            spellPrompt.value = "";
+            setControlsEnabled(true);
+        }
+
+        function loadOpponent(index) {
+            if (index >= opponents.length) {
+                endGame(true); // Player wins the game
+                return;
+            }
+            const opponent = opponents[index];
+            enemyName.textContent = opponent.name;
+            enemyHealth = 100;
+            
+            // Update enemy sprite robe color
+            enemySpriteElement.style.setProperty('--robe-color', opponent.robeColor);
+            
+            updateHealthUI();
+        }
+
+        function setControlsEnabled(enabled) {
+            fightButton.disabled = !enabled;
+            spellPrompt.disabled = !enabled;
+            isAnimating = !enabled;
+        }
+
+        function logMessage(message, type = "info") {
+            const p = document.createElement('p');
+            if (type === "player") p.style.color = "#87cefa"; // Light blue
+            else if (type === "enemy") p.style.color = "#ff8c8c"; // Light red
+            else if (type === "system") p.style.color = "#fafad2"; // Light yellow
+            else if (type === "error") p.style.color = "#ffff00"; // Yellow
+            
+            p.textContent = `> ${message}`;
+            messageLog.appendChild(p);
+            // Scroll to bottom
+            messageLog.scrollTop = messageLog.scrollHeight;
+        }
+
+        function updateHealthUI() {
+            playerHealthBar.style.width = `${playerHealth}%`;
+            enemyHealthBar.style.width = `${enemyHealth}%`;
+            
+            // Update health bar colors based on health
+            [playerHealthBar, enemyHealthBar].forEach((bar, i) => {
+                const health = (i === 0) ? playerHealth : enemyHealth;
+                if (health < 25) bar.style.backgroundColor = "#ff0000"; // Red
+                else if (health < 50) bar.style.backgroundColor = "#ffff00"; // Yellow
+                else bar.style.backgroundColor = "#00ff00"; // Green
+            });
+        }
+        
+        function updateScoreUI() {
+            playerScore.textContent = `Score: ${score}`;
+        }
+
+        function handleFightClick() {
+            if (!isPlayerTurn || isAnimating) return;
+
+            const prompt = spellPrompt.value.trim();
+            if (!prompt) {
+                logMessage("You must enter a spell!", "error");
+                return;
+            }
+            
+            setControlsEnabled(false);
+            logMessage(`Casting "${prompt}"...`);
+            loadingOverlay.classList.remove('hidden');
+
+            callGeminiApi(prompt);
+        }
+        
+        function playerAttack(spell) {
+            logMessage(`You cast ${spell.spellName}! ${spell.description}`, "player");
+            
+            animateSpell(true, spell.damage); // true = from player
+            
+            // Apply damage after animation
+            setTimeout(() => {
+                enemyHealth = Math.max(0, enemyHealth - spell.damage);
+                updateHealthUI();
+                animateHit(enemySprite);
+                logMessage(`${opponents[currentOpponentIndex].name} takes ${spell.damage} damage!`, "system");
+
+                if (enemyHealth === 0) {
+                    // Enemy defeated
+                    logMessage(`You defeated ${opponents[currentOpponentIndex].name}!`, "system");
+                    score += 100;
+                    updateScoreUI();
+                    currentOpponentIndex++;
+                    
+                    // Pause before next fight
+                    setTimeout(() => {
+                        loadOpponent(currentOpponentIndex);
+                        if(currentOpponentIndex < opponents.length) {
+                             logMessage(`Your next opponent steps up: ${opponents[currentOpponentIndex].name}!`);
+                             setControlsEnabled(true);
+                             isPlayerTurn = true;
+                        }
+                    }, 2000);
+                } else {
+                    // Enemy turn
+                    setTimeout(enemyTurn, 1500);
+                }
+            }, 500); // 500ms for spell animation
+        }
+
+        function enemyTurn() {
+            logMessage(`${opponents[currentOpponentIndex].name}'s turn...`);
+            
+            // Simple AI: pick a random spell
+            const spellIndex = Math.floor(Math.random() * (70 - 5 + 1)) + 5;
+            let spell;
+            if (spellIndex > 65) spell = enemySpells[3];
+            else if (spellIndex > 50) spell = enemySpells[2];
+            else if (spellIndex > 30) spell = enemySpells[1];
+            else spell = enemySpells[0];
+            
+            logMessage(`${opponents[currentOpponentIndex].name} casts ${spell.name}!`, "enemy");
+
+            animateSpell(false, spell.damage); // false = from enemy
+            
+            // Apply damage after animation
+            setTimeout(() => {
+                playerHealth = Math.max(0, playerHealth - spell.damage);
+                updateHealthUI();
+                animateHit(playerSprite);
+                logMessage(`You take ${spell.damage} damage!`, "system");
+
+                if (playerHealth === 0) {
+                    // Player defeated
+                    endGame(false);
+                } else {
+                    // Player's turn again
+                    logMessage("Your turn!");
+                    setControlsEnabled(true);
+                    isPlayerTurn = true;
+                }
+            }, 500);
+        }
+
+        function animateSpell(fromPlayer, damage) {
+            const projectile = document.createElement('div');
+            projectile.className = 'spell-projectile';
+            
+            // "Unique" animation: color based on damage
+            let spellColor = "#ffffff"; // White
+            if (damage > 60) spellColor = "#00ff00"; // Green (Avada)
+            else if (damage > 40) spellColor = "#ff00ff"; // Purple
+            else if (damage > 20) spellColor = "#ff0000"; // Red
+            else spellColor = "#00ffff"; // Cyan
+            
+            projectile.style.setProperty('--spell-color', spellColor);
+            
+            animationArea.appendChild(projectile);
+
+            if (fromPlayer) {
+                projectile.classList.add('fly-to-enemy');
+            } else {
+                projectile.classList.add('fly-to-player');
+            }
+            
+            // Clean up projectile
+            setTimeout(() => {
+                projectile.remove();
+            }, 500);
+        }
+
+        function animateHit(spriteElement) {
+            spriteElement.classList.add('shake');
+            setTimeout(() => {
+                spriteElement.classList.remove('shake');
+            }, 300);
+        }
+
+        function endGame(playerWon) {
+            setControlsEnabled(false);
+            isAnimating = true;
+            
+            if (playerWon) {
+                gameOverTitle.textContent = "You are the Champion!";
+                logMessage("You defeated all opponents! Congratulations!");
+            } else {
+                gameOverTitle.textContent = "You Have Been Defeated!";
+                logMessage("You collapse... the duel is lost.");
+            }
+            gameOverScore.textContent = `Final Score: ${score}`;
+            gameOverModal.classList.remove('hidden');
+        }
+
+        // --- Gemini API Call ---
+        async function callGeminiApi(userPrompt) {
+            const apiKey = "AIzaSyDUtOVSAumHMTaeSfkZhpFU2uadkJAVMjU"; // <<< PASTE YOUR API KEY HERE (Canvas will provide this if empty)
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+            const systemPrompt = `You are a Harry Potter spell generation engine for a game.
+            The user will provide a spell name or description.
+            You MUST return a JSON object with the following schema.
+            - "spellName": The official or a creative name for the spell.
+            - "damage": A number between 0 and 70. Powerful spells (like 'Avada Kedavra' or 'bombarda maxima') should be high (60-70). Weak or failed spells (like 'Locomotor Mortis' or 'Tickle' or gibberish) should be low (0). Standard spells ('Expelliarmus', 'Stupefy') should be mid-range (20-40). A spell that does nothing should have 0 damage.
+            - "description": A brief, 1-sentence description of the spell's visual effect (e.g., "A jet of red light shoots out.")`;
+
+            const schema = {
+                type: "OBJECT",
+                properties: {
+                    "spellName": { "type": "STRING" },
+                    "damage": { "type": "NUMBER" },
+                    "description": { "type": "STRING" }
+                },
+                required: ["spellName", "damage", "description"]
+            };
+
+            const payload = {
+                contents: [{ parts: [{ text: userPrompt }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: schema
+                }
+            };
+
+            let response;
+            let delay = 1000;
+            let spellData;
+            
+            try {
+                for (let i = 0; i < 5; i++) { // Retry logic
+                    try {
+                        response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if (response.ok) break;
+                    } catch (error) {
+                        // Network error, will retry
+                    }
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2;
+                }
+
+                if (!response || !response.ok) {
+                    throw new Error("API request failed after retries.");
+                }
+
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    const jsonText = candidate.content.parts[0].text;
+                    const parsedJson = JSON.parse(jsonText);
+                    
+                    // Clamp damage just in case model violates instruction
+                    parsedJson.damage = Math.floor(Math.max(0, Math.min(70, parsedJson.damage)));
+                    spellData = parsedJson;
+                } else {
+                    throw new Error("Invalid API response structure.");
+                }
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                logMessage("Your spell fizzled! (API Error)", "error");
+                // Default "fizzle" spell
+                spellData = { spellName: "Fizzle", damage: 0, description: "It does nothing..." };
+            }
+            
+            loadingOverlay.classList.add('hidden');
+            playerAttack(spellData);
+        }
+
+        // --- Event Listeners ---
+        fightButton.addEventListener('click', handleFightClick);
+        // Allow pressing Enter to fight
+        spellPrompt.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleFightClick();
+            }
+        });
+        
+        runButton.addEventListener('click', initGame);
+        playAgainButton.addEventListener('click', initGame);
+
+        // --- Start Game ---
+        initGame();
+
+    </script>
+</body>
+</html>
+
